@@ -9,8 +9,8 @@ function Navbar() {
   const cartItemCount = 3; // Demo value
 
   const navLinks = [
-    { name: "Home", href: "#" },
-    { name: "Products", href: "#products" },
+    { name: "Home", href: "/" },
+    { name: "Products", href: "/products" },
     { name: "About", href: "#about" },
     { name: "Contact", href: "#contact" },
   ];
