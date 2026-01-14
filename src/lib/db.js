@@ -54,12 +54,16 @@ export async function executeQuery(query, params = []) {
 export async function checkDatabaseConnection() {
     try {
         await sql`SELECT 1 as health_check`;
+        console.log('✅ Neon Postgres connected successfully');
         return true;
     } catch (error) {
-        console.error('Database connection check failed:', error);
+        console.error('❌ Database connection check failed:', error);
         return false;
     }
 }
+
+// Log initialization status
+console.log('🔌 Neon Postgres database client initialized');
 
 /**
  * Transaction helper for executing multiple queries atomically
@@ -77,6 +81,31 @@ export async function withTransaction(callback) {
     } catch (error) {
         await sql`ROLLBACK`;
         console.error('Transaction failed, rolled back:', error);
+        throw error;
+    }
+}
+
+/**
+ * Initialize the products table
+ * Creates the table if it doesn't exist
+ * @returns {Promise<void>}
+ */
+export async function initProductsTable() {
+    try {
+        await sql`
+            CREATE TABLE IF NOT EXISTS products (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                price DECIMAL(10, 2) NOT NULL,
+                original_price DECIMAL(10, 2),
+                description TEXT NOT NULL,
+                image_url TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `;
+        console.log('✅ Products table initialized');
+    } catch (error) {
+        console.error('❌ Failed to initialize products table:', error);
         throw error;
     }
 }

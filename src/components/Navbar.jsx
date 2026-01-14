@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export default function Navbar() {
+function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const cartItemCount = 3; // Demo value
 
@@ -14,6 +14,15 @@ export default function Navbar() {
     { name: "About", href: "#about" },
     { name: "Contact", href: "#contact" },
   ];
+
+  // Memoized toggle handler
+  const toggleMenu = useCallback(() => {
+    setIsMenuOpen((prev) => !prev);
+  }, []);
+
+  const closeMenu = useCallback(() => {
+    setIsMenuOpen(false);
+  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200/50 dark:border-gray-800/50">
@@ -115,7 +124,7 @@ export default function Navbar() {
               variant="ghost"
               size="icon"
               className="md:hidden"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={toggleMenu}
             >
               <svg
                 className="w-6 h-6"
@@ -152,7 +161,7 @@ export default function Navbar() {
                   key={link.name}
                   href={link.href}
                   className="px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all duration-200 font-medium"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={closeMenu}
                 >
                   {link.name}
                 </a>
@@ -167,3 +176,6 @@ export default function Navbar() {
     </nav>
   );
 }
+
+// Export memoized Navbar to prevent unnecessary re-renders
+export default memo(Navbar);

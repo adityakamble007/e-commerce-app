@@ -1,8 +1,14 @@
 "use client";
 
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
 
-export default function Footer() {
+// Memoized social icon component
+const SocialIcon = memo(function SocialIcon({ icon }) {
+    return icon;
+});
+
+function Footer() {
     const footerLinks = {
         shop: [
             { name: "New Arrivals", href: "#" },
@@ -80,13 +86,14 @@ export default function Footer() {
             {/* Gradient Accent */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600" />
 
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-5">
-                <div className="absolute inset-0" style={{
+            {/* Background Pattern - using CSS instead of inline style for better performance */}
+            <div
+                className="absolute inset-0 opacity-5"
+                style={{
                     backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-                    backgroundSize: '40px 40px'
-                }} />
-            </div>
+                    backgroundSize: "40px 40px",
+                }}
+            />
 
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
                 {/* Newsletter Section */}
@@ -95,7 +102,8 @@ export default function Footer() {
                         Stay in the Loop
                     </h3>
                     <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                        Subscribe to our newsletter for exclusive deals, new arrivals, and insider-only discounts.
+                        Subscribe to our newsletter for exclusive deals, new
+                        arrivals, and insider-only discounts.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
                         <input
@@ -134,7 +142,8 @@ export default function Footer() {
                             </span>
                         </div>
                         <p className="text-gray-400 text-sm mb-4">
-                            Premium shopping experience with curated collections and exceptional service.
+                            Premium shopping experience with curated collections
+                            and exceptional service.
                         </p>
                         <div className="flex gap-3">
                             {socialLinks.map((social) => (
@@ -142,8 +151,9 @@ export default function Footer() {
                                     key={social.name}
                                     href={social.href}
                                     className="p-2.5 rounded-lg bg-gray-800 text-gray-400 hover:text-white hover:bg-gradient-to-br hover:from-violet-600 hover:to-indigo-600 transition-all duration-300"
+                                    aria-label={social.name}
                                 >
-                                    {social.icon}
+                                    <SocialIcon icon={social.icon} />
                                 </a>
                             ))}
                         </div>
@@ -168,7 +178,9 @@ export default function Footer() {
 
                     {/* Support Links */}
                     <div>
-                        <h4 className="font-semibold text-white mb-4">Support</h4>
+                        <h4 className="font-semibold text-white mb-4">
+                            Support
+                        </h4>
                         <ul className="space-y-3">
                             {footerLinks.support.map((link) => (
                                 <li key={link.name}>
@@ -185,7 +197,9 @@ export default function Footer() {
 
                     {/* Company Links */}
                     <div>
-                        <h4 className="font-semibold text-white mb-4">Company</h4>
+                        <h4 className="font-semibold text-white mb-4">
+                            Company
+                        </h4>
                         <ul className="space-y-3">
                             {footerLinks.company.map((link) => (
                                 <li key={link.name}>
@@ -207,13 +221,22 @@ export default function Footer() {
                         © 2026 ShopVibe. All rights reserved.
                     </p>
                     <div className="flex gap-6">
-                        <a href="#" className="text-gray-400 hover:text-violet-400 text-sm transition-colors duration-200">
+                        <a
+                            href="#"
+                            className="text-gray-400 hover:text-violet-400 text-sm transition-colors duration-200"
+                        >
                             Privacy Policy
                         </a>
-                        <a href="#" className="text-gray-400 hover:text-violet-400 text-sm transition-colors duration-200">
+                        <a
+                            href="#"
+                            className="text-gray-400 hover:text-violet-400 text-sm transition-colors duration-200"
+                        >
                             Terms of Service
                         </a>
-                        <a href="#" className="text-gray-400 hover:text-violet-400 text-sm transition-colors duration-200">
+                        <a
+                            href="#"
+                            className="text-gray-400 hover:text-violet-400 text-sm transition-colors duration-200"
+                        >
                             Cookies
                         </a>
                     </div>
@@ -222,3 +245,6 @@ export default function Footer() {
         </footer>
     );
 }
+
+// Export memoized Footer to prevent unnecessary re-renders
+export default memo(Footer);
