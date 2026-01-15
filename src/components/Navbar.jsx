@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, memo, useCallback } from "react";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -114,10 +115,24 @@ function Navbar() {
               )}
             </Button>
 
-            {/* CTA Button */}
-            <Button className="hidden sm:flex bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-lg shadow-violet-500/30 transition-all duration-300 hover:shadow-violet-500/50">
-              Sign In
-            </Button>
+            {/* Auth Buttons */}
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button className="hidden sm:flex bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-lg shadow-violet-500/30 transition-all duration-300 hover:shadow-violet-500/50">
+                  Sign In
+                </Button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox:
+                      "w-9 h-9 ring-2 ring-violet-500/30 hover:ring-violet-500/50 transition-all",
+                  },
+                }}
+              />
+            </SignedIn>
 
             {/* Mobile menu button */}
             <Button
@@ -166,9 +181,25 @@ function Navbar() {
                   {link.name}
                 </a>
               ))}
-              <Button className="mt-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white">
-                Sign In
-              </Button>
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <Button className="mt-4 w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white">
+                    Sign In
+                  </Button>
+                </SignInButton>
+              </SignedOut>
+              <SignedIn>
+                <div className="mt-4 flex justify-center">
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        avatarBox:
+                          "w-10 h-10 ring-2 ring-violet-500/30 hover:ring-violet-500/50 transition-all",
+                      },
+                    }}
+                  />
+                </div>
+              </SignedIn>
             </div>
           </div>
         )}
