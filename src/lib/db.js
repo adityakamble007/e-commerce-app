@@ -110,4 +110,52 @@ export async function initProductsTable() {
     }
 }
 
+/**
+ * Initialize the carts table
+ * Supports both guest users (via session_id) and logged-in users (via user_id)
+ * @returns {Promise<void>}
+ */
+export async function initCartsTable() {
+    try {
+        await sql`
+            CREATE TABLE IF NOT EXISTS carts (
+                id SERIAL PRIMARY KEY,
+                user_id VARCHAR(255) UNIQUE,
+                session_id VARCHAR(255) UNIQUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `;
+        console.log('✅ Carts table initialized');
+    } catch (error) {
+        console.error('❌ Failed to initialize carts table:', error);
+        throw error;
+    }
+}
+
+/**
+ * Initialize the cart_items table
+ * Links cart items to carts and products
+ * @returns {Promise<void>}
+ */
+export async function initCartItemsTable() {
+    try {
+        await sql`
+            CREATE TABLE IF NOT EXISTS cart_items (
+                id SERIAL PRIMARY KEY,
+                cart_id INTEGER REFERENCES carts(id) ON DELETE CASCADE,
+                product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+                quantity INTEGER NOT NULL DEFAULT 1,
+                added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(cart_id, product_id)
+            )
+        `;
+        console.log('✅ Cart items table initialized');
+    } catch (error) {
+        console.error('❌ Failed to initialize cart_items table:', error);
+        throw error;
+    }
+}
+
 export default sql;
+

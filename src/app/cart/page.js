@@ -1,69 +1,49 @@
 "use client";
 
-import { useState, memo } from "react";
+import { memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-
-// Static cart data for demo
-const initialCartItems = [
-    {
-        id: 1,
-        name: "Premium Wireless Headphones",
-        price: 299.99,
-        originalPrice: 399.99,
-        quantity: 1,
-        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop",
-        color: "Matte Black",
-        inStock: true,
-    },
-    {
-        id: 2,
-        name: "Smart Watch Pro",
-        price: 449.99,
-        originalPrice: 549.99,
-        quantity: 2,
-        image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop",
-        color: "Space Gray",
-        inStock: true,
-    },
-    {
-        id: 3,
-        name: "Leather Messenger Bag",
-        price: 189.99,
-        originalPrice: 249.99,
-        quantity: 1,
-        image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop",
-        color: "Vintage Brown",
-        inStock: true,
-    },
-];
+import { useCart } from "@/hooks/useCart";
 
 // Cart Item Component
 const CartItem = memo(function CartItem({
     item,
     onUpdateQuantity,
-    onRemove
+    onRemove,
+    isUpdating
 }) {
+    const price = parseFloat(item.price) || 0;
+    const originalPrice = parseFloat(item.original_price) || price;
+    const hasDiscount = originalPrice > price;
+
     return (
         <div className="group relative bg-white dark:bg-gray-900 rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-800">
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                 {/* Product Image */}
                 <div className="relative w-full sm:w-32 h-32 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex-shrink-0">
-                    <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        sizes="(max-width: 640px) 100vw, 128px"
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                    {item.image_url ? (
+                        <Image
+                            src={item.image_url}
+                            alt={item.title}
+                            fill
+                            sizes="(max-width: 640px) 100vw, 128px"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                    )}
                     {/* Discount Badge */}
-                    {item.originalPrice > item.price && (
+                    {hasDiscount && (
                         <Badge className="absolute top-2 left-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs border-0">
-                            -{Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}%
+                            -{Math.round(((originalPrice - price) / originalPrice) * 100)}%
                         </Badge>
                     )}
                 </div>
@@ -73,36 +53,34 @@ const CartItem = memo(function CartItem({
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                         <div className="flex-1">
                             <h3 className="font-semibold text-lg text-gray-900 dark:text-white line-clamp-2 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
-                                {item.name}
+                                {item.title}
                             </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                Color: {item.color}
-                            </p>
-                            {item.inStock ? (
-                                <p className="text-sm text-emerald-500 flex items-center gap-1 mt-2">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                    In Stock
+                            {item.description && (
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">
+                                    {item.description}
                                 </p>
-                            ) : (
-                                <p className="text-sm text-rose-500 mt-2">Out of Stock</p>
                             )}
+                            <p className="text-sm text-emerald-500 flex items-center gap-1 mt-2">
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                In Stock
+                            </p>
                         </div>
 
                         {/* Price */}
                         <div className="text-right">
                             <div className="text-xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
-                                ${(item.price * item.quantity).toFixed(2)}
+                                ${(price * item.quantity).toFixed(2)}
                             </div>
-                            {item.originalPrice > item.price && (
+                            {hasDiscount && (
                                 <div className="text-sm text-gray-400 line-through">
-                                    ${(item.originalPrice * item.quantity).toFixed(2)}
+                                    ${(originalPrice * item.quantity).toFixed(2)}
                                 </div>
                             )}
                             {item.quantity > 1 && (
                                 <div className="text-xs text-gray-500 mt-1">
-                                    ${item.price.toFixed(2)} each
+                                    ${price.toFixed(2)} each
                                 </div>
                             )}
                         </div>
@@ -116,8 +94,8 @@ const CartItem = memo(function CartItem({
                             <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden">
                                 <button
                                     onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                                    className="p-2 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
-                                    disabled={item.quantity <= 1}
+                                    className="p-2 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors disabled:opacity-50"
+                                    disabled={item.quantity <= 1 || isUpdating}
                                 >
                                     <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -128,7 +106,8 @@ const CartItem = memo(function CartItem({
                                 </span>
                                 <button
                                     onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                                    className="p-2 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
+                                    className="p-2 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors disabled:opacity-50"
+                                    disabled={isUpdating}
                                 >
                                     <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -140,7 +119,8 @@ const CartItem = memo(function CartItem({
                         {/* Remove Button */}
                         <button
                             onClick={() => onRemove(item.id)}
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-all duration-200"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-all duration-200 disabled:opacity-50"
+                            disabled={isUpdating}
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -155,9 +135,15 @@ const CartItem = memo(function CartItem({
 });
 
 // Order Summary Component
-const OrderSummary = memo(function OrderSummary({ cartItems }) {
-    const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const originalTotal = cartItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0);
+const OrderSummary = memo(function OrderSummary({ cartItems, isLoading }) {
+    const subtotal = cartItems.reduce((sum, item) => {
+        const price = parseFloat(item.price) || 0;
+        return sum + price * item.quantity;
+    }, 0);
+    const originalTotal = cartItems.reduce((sum, item) => {
+        const original = parseFloat(item.original_price) || parseFloat(item.price) || 0;
+        return sum + original * item.quantity;
+    }, 0);
     const discount = originalTotal - subtotal;
     const shipping = subtotal > 100 ? 0 : 9.99;
     const tax = subtotal * 0.08;
@@ -215,7 +201,7 @@ const OrderSummary = memo(function OrderSummary({ cartItems }) {
             </div>
 
             {/* Free Shipping Progress */}
-            {shipping > 0 && (
+            {shipping > 0 && subtotal > 0 && (
                 <div className="mt-6 p-4 bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-900/20 dark:to-indigo-900/20 rounded-xl">
                     <div className="flex items-center gap-2 text-sm text-violet-600 dark:text-violet-400 mb-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,7 +219,10 @@ const OrderSummary = memo(function OrderSummary({ cartItems }) {
             )}
 
             {/* Checkout Button */}
-            <Button className="w-full mt-6 h-14 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-lg font-semibold shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 transition-all duration-300 rounded-xl">
+            <Button
+                className="w-full mt-6 h-14 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-lg font-semibold shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 transition-all duration-300 rounded-xl disabled:opacity-50"
+                disabled={isLoading || cartItems.length === 0}
+            >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
@@ -295,23 +284,38 @@ const EmptyCart = memo(function EmptyCart() {
     );
 });
 
+// Loading Skeleton
+const CartSkeleton = memo(function CartSkeleton() {
+    return (
+        <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-800 animate-pulse">
+                    <div className="flex gap-6">
+                        <div className="w-32 h-32 bg-gray-200 dark:bg-gray-700 rounded-xl" />
+                        <div className="flex-1 space-y-3">
+                            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
+                            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-24 mt-4" />
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+});
+
 export default function CartPage() {
-    const [cartItems, setCartItems] = useState(initialCartItems);
+    const {
+        items: cartItems,
+        isLoading,
+        updateQuantity,
+        removeFromCart,
+        clearCart
+    } = useCart();
 
-    const updateQuantity = (id, newQuantity) => {
-        setCartItems(items =>
-            items.map(item =>
-                item.id === id ? { ...item, quantity: newQuantity } : item
-            )
-        );
-    };
-
-    const removeItem = (id) => {
-        setCartItems(items => items.filter(item => item.id !== id));
-    };
-
-    const clearCart = () => {
-        setCartItems([]);
+    const handleClearCart = async () => {
+        await clearCart();
     };
 
     return (
@@ -327,14 +331,16 @@ export default function CartPage() {
                                 Shopping Cart
                             </h1>
                             <p className="text-gray-500 dark:text-gray-400 mt-1">
-                                {cartItems.length > 0
-                                    ? `${cartItems.length} item${cartItems.length > 1 ? 's' : ''} in your cart`
-                                    : 'Your cart is empty'
+                                {isLoading
+                                    ? 'Loading your cart...'
+                                    : cartItems.length > 0
+                                        ? `${cartItems.length} item${cartItems.length > 1 ? 's' : ''} in your cart`
+                                        : 'Your cart is empty'
                                 }
                             </p>
                         </div>
 
-                        {cartItems.length > 0 && (
+                        {cartItems.length > 0 && !isLoading && (
                             <div className="flex items-center gap-4">
                                 <Link href="/products">
                                     <Button variant="outline" className="rounded-xl border-violet-300 text-violet-600 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-400 dark:hover:bg-violet-900/20">
@@ -345,7 +351,7 @@ export default function CartPage() {
                                     </Button>
                                 </Link>
                                 <button
-                                    onClick={clearCart}
+                                    onClick={handleClearCart}
                                     className="text-sm text-rose-500 hover:text-rose-600 transition-colors"
                                 >
                                     Clear Cart
@@ -354,7 +360,24 @@ export default function CartPage() {
                         )}
                     </div>
 
-                    {cartItems.length === 0 ? (
+                    {isLoading ? (
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div className="lg:col-span-2">
+                                <CartSkeleton />
+                            </div>
+                            <div className="lg:col-span-1">
+                                <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-800 animate-pulse">
+                                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-6" />
+                                    <div className="space-y-4">
+                                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+                                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+                                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+                                        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded mt-6" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : cartItems.length === 0 ? (
                         <EmptyCart />
                     ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -365,42 +388,15 @@ export default function CartPage() {
                                         key={item.id}
                                         item={item}
                                         onUpdateQuantity={updateQuantity}
-                                        onRemove={removeItem}
+                                        onRemove={removeFromCart}
+                                        isUpdating={isLoading}
                                     />
                                 ))}
-
-                                {/* You Might Also Like */}
-                                <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                        You might also like
-                                    </h3>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                        {[
-                                            { name: "Wireless Earbuds", price: 79.99, image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=200&h=200&fit=crop" },
-                                            { name: "Phone Stand", price: 29.99, image: "https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?w=200&h=200&fit=crop" },
-                                            { name: "USB-C Cable", price: 19.99, image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop" },
-                                        ].map((product, index) => (
-                                            <div key={index} className="group bg-white dark:bg-gray-900 rounded-xl p-3 shadow hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-100 dark:border-gray-800">
-                                                <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 mb-2">
-                                                    <Image
-                                                        src={product.image}
-                                                        alt={product.name}
-                                                        fill
-                                                        sizes="200px"
-                                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                                    />
-                                                </div>
-                                                <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">{product.name}</p>
-                                                <p className="text-sm font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">${product.price}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
                             </div>
 
                             {/* Order Summary */}
                             <div className="lg:col-span-1">
-                                <OrderSummary cartItems={cartItems} />
+                                <OrderSummary cartItems={cartItems} isLoading={isLoading} />
                             </div>
                         </div>
                     )}

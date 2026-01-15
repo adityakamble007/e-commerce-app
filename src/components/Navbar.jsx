@@ -1,14 +1,27 @@
 "use client";
 
-import { useState, memo, useCallback } from "react";
+import { useState, memo, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useCart } from "@/hooks/useCart";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const cartItemCount = 3; // Demo value
+  const [badgeAnimating, setBadgeAnimating] = useState(false);
+  const { cartCount } = useCart();
+  const prevCartCountRef = useRef(cartCount);
+
+  // Animate badge when cart count increases
+  useEffect(() => {
+    if (cartCount > prevCartCountRef.current) {
+      setBadgeAnimating(true);
+      const timer = setTimeout(() => setBadgeAnimating(false), 400);
+      return () => clearTimeout(timer);
+    }
+    prevCartCountRef.current = cartCount;
+  }, [cartCount]);
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -32,7 +45,7 @@ function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <a href="#" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
                 <svg
                   className="w-6 h-6 text-white"
@@ -51,20 +64,31 @@ function Navbar() {
               <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
                 ShopVibe
               </span>
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all duration-200 font-medium"
-              >
-                {link.name}
-              </a>
-            ))}
+            {navLinks.map((link) =>
+              link.href.startsWith('#') ? (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all duration-200 font-medium"
+                >
+                  {link.name}
+                </a>
+              ) : (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  prefetch={true}
+                  className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all duration-200 font-medium"
+                >
+                  {link.name}
+                </Link>
+              )
+            )}
           </div>
 
           {/* Right side actions */}
@@ -110,9 +134,13 @@ function Navbar() {
                     d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
                   />
                 </svg>
-                {cartItemCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs border-0">
-                    {cartItemCount}
+                {cartCount > 0 && (
+                  <Badge className={`
+                    absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 
+                    bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs border-0
+                    ${badgeAnimating ? 'animate-bounce-in' : ''}
+                  `}>
+                    {cartCount}
                   </Badge>
                 )}
               </Button>
@@ -174,16 +202,28 @@ function Navbar() {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200/50 dark:border-gray-800/50">
             <div className="flex flex-col space-y-1">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all duration-200 font-medium"
-                  onClick={closeMenu}
-                >
-                  {link.name}
-                </a>
-              ))}
+              {navLinks.map((link) =>
+                link.href.startsWith('#') ? (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    className="px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all duration-200 font-medium"
+                    onClick={closeMenu}
+                  >
+                    {link.name}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    prefetch={true}
+                    className="px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all duration-200 font-medium"
+                    onClick={closeMenu}
+                  >
+                    {link.name}
+                  </Link>
+                )
+              )}
               <SignedOut>
                 <SignInButton mode="modal">
                   <Button className="mt-4 w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white">

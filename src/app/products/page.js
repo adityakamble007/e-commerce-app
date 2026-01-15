@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Card from "@/components/Card";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks/useProducts";
+import { useCart } from "@/hooks/useCart";
+import { useToast } from "@/components/Toast";
 import ProductGridSkeleton from "@/components/ProductGridSkeleton";
 import { ErrorState, EmptyState } from "@/components/FeedbackStates";
 
@@ -15,10 +17,21 @@ import { ErrorState, EmptyState } from "@/components/FeedbackStates";
  */
 export default function ProductsPage() {
     const { products, isLoading, error, refetch } = useProducts();
+    const { addToCart } = useCart();
+    const { addToast } = useToast();
+    const [addingProductId, setAddingProductId] = useState(null);
 
-    const handleAddToCart = useCallback((title) => {
-        console.log(`Added ${title} to cart`);
-    }, []);
+    const handleAddToCart = useCallback(async (productId, productTitle) => {
+        setAddingProductId(productId);
+        const result = await addToCart(productId, 1);
+        setAddingProductId(null);
+
+        if (result.success) {
+            addToast(`${productTitle} added to cart!`, "cart");
+        } else {
+            addToast("Failed to add item to cart", "error");
+        }
+    }, [addToCart, addToast]);
 
     return (
         <main className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -79,7 +92,8 @@ export default function ProductsPage() {
                                     price={product.price}
                                     originalPrice={product.original_price}
                                     description={product.description}
-                                    onAddToCart={() => handleAddToCart(product.title)}
+                                    onAddToCart={() => handleAddToCart(product.id, product.title)}
+                                    isAdding={addingProductId === product.id}
                                 />
                             ))}
                         </div>

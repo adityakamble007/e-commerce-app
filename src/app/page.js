@@ -1,16 +1,22 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState } from "react";
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Card from "@/components/Card";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks/useProducts";
+import { useCart } from "@/hooks/useCart";
+import { useToast } from "@/components/Toast";
 import ProductGridSkeleton from "@/components/ProductGridSkeleton";
 import { ErrorState, EmptyState } from "@/components/FeedbackStates";
 
 export default function Home() {
   const { products, isLoading, error, refetch } = useProducts();
+  const { addToCart } = useCart();
+  const { addToast } = useToast();
+  const [addingProductId, setAddingProductId] = useState(null);
 
   // Memoize static categories data
   const categories = useMemo(
@@ -23,10 +29,18 @@ export default function Home() {
     [],
   );
 
-  // Memoize add to cart handler
-  const handleAddToCart = useCallback((title) => {
-    console.log(`Added ${title} to cart`);
-  }, []);
+  // Add to cart handler with animation
+  const handleAddToCart = useCallback(async (productId, productTitle) => {
+    setAddingProductId(productId);
+    const result = await addToCart(productId, 1);
+    setAddingProductId(null);
+
+    if (result.success) {
+      addToast(`${productTitle} added to cart!`, "cart");
+    } else {
+      addToast("Failed to add item to cart", "error");
+    }
+  }, [addToCart, addToast]);
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -76,25 +90,27 @@ export default function Home() {
                 Handpicked items just for you
               </p>
             </div>
-            <Button
-              variant="outline"
-              className="rounded-xl border-2 hover:border-violet-500 transition-colors"
-            >
-              View All Products
-              <svg
-                className="w-4 h-4 ml-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <Link href="/products" prefetch={true}>
+              <Button
+                variant="outline"
+                className="rounded-xl border-2 hover:border-violet-500 transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </Button>
+                View All Products
+                <svg
+                  className="w-4 h-4 ml-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </Button>
+            </Link>
           </div>
 
           {/* Loading State */}
@@ -125,7 +141,8 @@ export default function Home() {
                   price={product.price}
                   originalPrice={product.original_price}
                   description={product.description}
-                  onAddToCart={() => handleAddToCart(product.title)}
+                  onAddToCart={() => handleAddToCart(product.id, product.title)}
+                  isAdding={addingProductId === product.id}
                 />
               ))}
             </div>
