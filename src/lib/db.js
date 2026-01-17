@@ -157,5 +157,37 @@ export async function initCartItemsTable() {
     }
 }
 
+/**
+ * Initialize the user_addresses table
+ * Stores shipping and contact info for logged-in users
+ * @returns {Promise<void>}
+ */
+export async function initUserAddressesTable() {
+    try {
+        await sql`
+            CREATE TABLE IF NOT EXISTS user_addresses (
+                id SERIAL PRIMARY KEY,
+                user_id VARCHAR(255) NOT NULL UNIQUE,
+                full_name VARCHAR(255),
+                email VARCHAR(255),
+                phone_country_code VARCHAR(10),
+                phone_number VARCHAR(50),
+                address_line1 VARCHAR(255),
+                address_line2 VARCHAR(255),
+                city VARCHAR(100),
+                state VARCHAR(100),
+                postal_code VARCHAR(20),
+                country VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `;
+        console.log('✅ User addresses table initialized');
+    } catch (error) {
+        console.error('❌ Failed to initialize user_addresses table:', error);
+        throw error;
+    }
+}
+
 export default sql;
 

@@ -5,6 +5,7 @@ const isPublicRoute = createRouteMatcher([
     "/",
     "/products(.*)",
     "/cart(.*)",
+    "/checkout(.*)",
     "/api/products(.*)",
     "/api/cart(.*)",
     "/api/uploadthing(.*)",
