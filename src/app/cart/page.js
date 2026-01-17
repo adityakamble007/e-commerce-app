@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -9,19 +9,41 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/hooks/useCart";
 
-// Cart Item Component
+// Cart Item Component with animations
 const CartItem = memo(function CartItem({
     item,
     onUpdateQuantity,
     onRemove,
-    isUpdating
+    isUpdating,
+    isRemoving,
+    animationDelay = 0
 }) {
     const price = parseFloat(item.price) || 0;
     const originalPrice = parseFloat(item.original_price) || price;
     const hasDiscount = originalPrice > price;
+    const [quantityAnimating, setQuantityAnimating] = useState(false);
+    const prevQuantityRef = useRef(item.quantity);
+
+    // Animate quantity changes
+    useEffect(() => {
+        if (item.quantity !== prevQuantityRef.current) {
+            setQuantityAnimating(true);
+            const timer = setTimeout(() => setQuantityAnimating(false), 350);
+            prevQuantityRef.current = item.quantity;
+            return () => clearTimeout(timer);
+        }
+    }, [item.quantity]);
 
     return (
-        <div className="group relative bg-white dark:bg-gray-900 rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-800">
+        <div
+            className={`
+                group relative bg-white dark:bg-gray-900 rounded-2xl p-4 sm:p-6 
+                shadow-lg hover:shadow-xl transition-all duration-300 
+                border border-gray-100 dark:border-gray-800
+                ${isRemoving ? 'animate-item-remove' : 'animate-item-enter'}
+            `}
+            style={{ animationDelay: isRemoving ? '0ms' : `${animationDelay}ms` }}
+        >
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                 {/* Product Image */}
                 <div className="relative w-full sm:w-32 h-32 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex-shrink-0">
@@ -94,19 +116,23 @@ const CartItem = memo(function CartItem({
                             <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden">
                                 <button
                                     onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                                    className="p-2 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors disabled:opacity-50"
+                                    className="p-2 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors disabled:opacity-50 active:scale-95"
                                     disabled={item.quantity <= 1 || isUpdating}
                                 >
                                     <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                                     </svg>
                                 </button>
-                                <span className="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white min-w-[40px] text-center">
+                                <span className={`
+                                    px-4 py-2 text-sm font-medium text-gray-900 dark:text-white min-w-[40px] text-center
+                                    transition-all duration-300 rounded-lg
+                                    ${quantityAnimating ? 'animate-quantity-pulse' : ''}
+                                `}>
                                     {item.quantity}
                                 </span>
                                 <button
                                     onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                                    className="p-2 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors disabled:opacity-50"
+                                    className="p-2 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors disabled:opacity-50 active:scale-95"
                                     disabled={isUpdating}
                                 >
                                     <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,8 +145,8 @@ const CartItem = memo(function CartItem({
                         {/* Remove Button */}
                         <button
                             onClick={() => onRemove(item.id)}
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-all duration-200 disabled:opacity-50"
-                            disabled={isUpdating}
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-all duration-200 disabled:opacity-50 active:scale-95"
+                            disabled={isUpdating || isRemoving}
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -314,6 +340,26 @@ export default function CartPage() {
         clearCart
     } = useCart();
 
+    const [removingItemId, setRemovingItemId] = useState(null);
+    const [hasAnimated, setHasAnimated] = useState(false);
+
+    // Track if initial animation has played
+    useEffect(() => {
+        if (!isLoading && cartItems.length > 0 && !hasAnimated) {
+            setHasAnimated(true);
+        }
+    }, [isLoading, cartItems.length, hasAnimated]);
+
+    // Handle removal with animation delay
+    const handleRemoveItem = async (itemId) => {
+        setRemovingItemId(itemId);
+        // Wait for animation to complete before actually removing
+        setTimeout(async () => {
+            await removeFromCart(itemId);
+            setRemovingItemId(null);
+        }, 400);
+    };
+
     const handleClearCart = async () => {
         await clearCart();
     };
@@ -342,8 +388,8 @@ export default function CartPage() {
 
                         {cartItems.length > 0 && !isLoading && (
                             <div className="flex items-center gap-4">
-                                <Link href="/products">
-                                    <Button variant="outline" className="rounded-xl border-violet-300 text-violet-600 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-400 dark:hover:bg-violet-900/20">
+                                <Link href="/products" prefetch={true}>
+                                    <Button variant="outline" className="rounded-xl border-violet-300 text-violet-600 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-400 dark:hover:bg-violet-900/20 transition-all duration-200 active:scale-95">
                                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                         </svg>
@@ -352,7 +398,7 @@ export default function CartPage() {
                                 </Link>
                                 <button
                                     onClick={handleClearCart}
-                                    className="text-sm text-rose-500 hover:text-rose-600 transition-colors"
+                                    className="text-sm text-rose-500 hover:text-rose-600 transition-colors active:scale-95"
                                 >
                                     Clear Cart
                                 </button>
@@ -383,13 +429,15 @@ export default function CartPage() {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             {/* Cart Items */}
                             <div className="lg:col-span-2 space-y-4">
-                                {cartItems.map((item) => (
+                                {cartItems.map((item, index) => (
                                     <CartItem
                                         key={item.id}
                                         item={item}
                                         onUpdateQuantity={updateQuantity}
-                                        onRemove={removeFromCart}
+                                        onRemove={handleRemoveItem}
                                         isUpdating={isLoading}
+                                        isRemoving={removingItemId === item.id}
+                                        animationDelay={hasAnimated ? 0 : index * 100}
                                     />
                                 ))}
                             </div>

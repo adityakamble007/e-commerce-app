@@ -60,9 +60,10 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {categories.map((category) => (
-              <a
+              <Link
                 key={category.name}
-                href="#"
+                href={`/products?category=${encodeURIComponent(category.name)}`}
+                prefetch={true}
                 className="group relative p-6 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 hover:from-violet-50 hover:to-indigo-50 dark:hover:from-violet-900/30 dark:hover:to-indigo-900/30 border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
               >
                 <div className="text-4xl mb-3">{category.icon}</div>
@@ -72,7 +73,7 @@ export default function Home() {
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {category.count} items
                 </p>
-              </a>
+              </Link>
             ))}
           </div>
         </div>

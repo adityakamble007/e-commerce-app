@@ -244,3 +244,79 @@
   transform: translateY(0);
   transition: all 0.3s ease-out;
 }
+
+/* Quantity update pulse animation */
+@keyframes quantity-pulse {
+  0%, 100% {
+    transform: scale(1);
+    background-color: transparent;
+  }
+  50% {
+    transform: scale(1.15);
+    background-color: rgba(139, 92, 246, 0.15);
+  }
+}
+
+/* Smooth item removal with height collapse */
+@keyframes item-remove {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    max-height: 200px;
+    margin-bottom: 1rem;
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateX(-20px) scale(0.98);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-40px) scale(0.95);
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+/* Staggered entry animation for cart items */
+@keyframes item-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Cart item count number animation */
+@keyframes count-update {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+    color: rgb(139, 92, 246);
+  }
+}
+
+.animate-quantity-pulse {
+  animation: quantity-pulse 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-item-remove {
+  animation: item-remove 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.animate-item-enter {
+  animation: item-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.animate-count-update {
+  animation: count-update 0.3s ease-in-out;
+}

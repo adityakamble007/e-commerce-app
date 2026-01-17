@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ToastProvider } from "@/components/Toast";
+import { CartProvider } from "@/hooks/useCart";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -53,11 +54,12 @@ export default function RootLayout({ children }) {
           suppressHydrationWarning
         >
           <ToastProvider>
-            {children}
+            <CartProvider>
+              {children}
+            </CartProvider>
           </ToastProvider>
         </body>
       </html>
     </ClerkProvider>
   );
 }
-

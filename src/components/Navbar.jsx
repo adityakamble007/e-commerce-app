@@ -115,7 +115,7 @@ function Navbar() {
             </Button>
 
             {/* Cart Button */}
-            <Link href="/cart">
+            <Link href="/cart" prefetch={true}>
               <Button
                 variant="ghost"
                 size="icon"
