@@ -303,11 +303,6 @@ export default function OrdersPage() {
                                                         Track Order
                                                     </button>
                                                 )}
-                                                {order.status === "delivered" && (
-                                                    <button className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                                                        Leave Review
-                                                    </button>
-                                                )}
                                             </div>
                                         </div>
                                     </div>
