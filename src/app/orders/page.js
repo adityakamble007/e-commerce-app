@@ -15,6 +15,7 @@ export default function OrdersPage() {
     const [orders, setOrders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedOrder, setSelectedOrder] = useState(null);
 
     // Fetch orders from API
     useEffect(() => {
@@ -69,6 +70,18 @@ export default function OrdersPage() {
             day: "numeric",
         });
     };
+
+    const formatDateTime = (dateString) => {
+        return new Date(dateString).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
+
+    const closeModal = () => setSelectedOrder(null);
 
     return (
         <>
@@ -295,7 +308,10 @@ export default function OrdersPage() {
                                         {/* Order Actions */}
                                         <div className="px-6 py-4 border-t border-gray-200/50 dark:border-gray-800/50 bg-gray-50/30 dark:bg-gray-800/20">
                                             <div className="flex flex-wrap gap-3">
-                                                <button className="px-4 py-2 text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition-colors">
+                                                <button
+                                                    onClick={() => setSelectedOrder(order)}
+                                                    className="px-4 py-2 text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition-colors"
+                                                >
                                                     View Details
                                                 </button>
                                                 {order.status !== "delivered" && (
@@ -388,6 +404,260 @@ export default function OrdersPage() {
                     </div>
                 </div>
             </main>
+
+            {/* Order Details Modal */}
+            {selectedOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        onClick={closeModal}
+                    />
+
+                    {/* Modal Content */}
+                    <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-800/50 animate-in fade-in zoom-in-95 duration-200">
+                        {/* Modal Header */}
+                        <div className="sticky top-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl px-6 py-5 border-b border-gray-200/50 dark:border-gray-800/50 z-10">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                                        Order Details
+                                    </h2>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                                        {selectedOrder.order_number}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={closeModal}
+                                    className="p-2 rounded-xl text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                >
+                                    <svg
+                                        className="w-5 h-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 space-y-6">
+                            {/* Status & Date */}
+                            <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-900/20 dark:to-indigo-900/20 rounded-2xl border border-violet-100 dark:border-violet-800/50">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${selectedOrder.status === "delivered"
+                                            ? "bg-green-100 dark:bg-green-900/30"
+                                            : selectedOrder.status === "shipping"
+                                                ? "bg-blue-100 dark:bg-blue-900/30"
+                                                : "bg-yellow-100 dark:bg-yellow-900/30"
+                                        }`}>
+                                        {selectedOrder.status === "delivered" ? (
+                                            <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        ) : selectedOrder.status === "shipping" ? (
+                                            <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${getStatusStyles(selectedOrder.status)}`}>
+                                            {formatStatus(selectedOrder.status)}
+                                        </span>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                            {selectedOrder.status === "delivered"
+                                                ? "Your order has been delivered"
+                                                : selectedOrder.status === "shipping"
+                                                    ? "Your order is on its way"
+                                                    : "Your order is being processed"}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">Order Placed</p>
+                                    <p className="font-medium text-gray-900 dark:text-white">
+                                        {formatDateTime(selectedOrder.created_at)}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Order Timeline */}
+                            <div className="space-y-3">
+                                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                    Order Timeline
+                                </h3>
+                                <div className="flex items-center gap-2 overflow-x-auto py-2">
+                                    {["processing", "shipping", "delivered"].map((step, index) => {
+                                        const steps = ["processing", "shipping", "delivered"];
+                                        const currentIndex = steps.indexOf(selectedOrder.status);
+                                        const isComplete = index <= currentIndex;
+                                        const isCurrent = step === selectedOrder.status;
+
+                                        return (
+                                            <div key={step} className="flex items-center">
+                                                <div className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${isCurrent
+                                                        ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/30"
+                                                        : isComplete
+                                                            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                                            : "bg-gray-100 dark:bg-gray-800 text-gray-400"
+                                                    }`}>
+                                                    {isComplete && !isCurrent ? (
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    ) : (
+                                                        <span className="w-4 h-4 flex items-center justify-center text-xs font-bold">
+                                                            {index + 1}
+                                                        </span>
+                                                    )}
+                                                    <span className="text-sm font-medium capitalize whitespace-nowrap">
+                                                        {step}
+                                                    </span>
+                                                </div>
+                                                {index < 2 && (
+                                                    <div className={`w-8 h-0.5 ${isComplete && index < currentIndex ? "bg-green-400" : "bg-gray-200 dark:bg-gray-700"}`} />
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Order Items */}
+                            <div className="space-y-3">
+                                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    </svg>
+                                    Items ({selectedOrder.items?.length || 0})
+                                </h3>
+                                <div className="space-y-3">
+                                    {selectedOrder.items?.map((item, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200/50 dark:border-gray-700/50"
+                                        >
+                                            <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-violet-100 to-indigo-100 dark:from-violet-900/30 dark:to-indigo-900/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                                {item.product_image ? (
+                                                    <img
+                                                        src={item.product_image}
+                                                        alt={item.product_title}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <svg className="w-10 h-10 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="font-semibold text-gray-900 dark:text-white">
+                                                    {item.product_title}
+                                                </h4>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                    Quantity: {item.quantity}
+                                                </p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    Price: ${parseFloat(item.product_price).toFixed(2)} each
+                                                </p>
+                                            </div>
+                                            <p className="text-lg font-bold text-violet-600 dark:text-violet-400">
+                                                ${(parseFloat(item.product_price) * item.quantity).toFixed(2)}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Shipping Address */}
+                            {selectedOrder.shipping_address && (
+                                <div className="space-y-3">
+                                    <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                        <svg className="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        Shipping Address
+                                    </h3>
+                                    <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200/50 dark:border-gray-700/50">
+                                        <p className="text-gray-900 dark:text-white">
+                                            {selectedOrder.shipping_address.line1}
+                                        </p>
+                                        {selectedOrder.shipping_address.line2 && (
+                                            <p className="text-gray-600 dark:text-gray-400">
+                                                {selectedOrder.shipping_address.line2}
+                                            </p>
+                                        )}
+                                        <p className="text-gray-600 dark:text-gray-400">
+                                            {selectedOrder.shipping_address.city}, {selectedOrder.shipping_address.state} {selectedOrder.shipping_address.postal_code}
+                                        </p>
+                                        <p className="text-gray-600 dark:text-gray-400">
+                                            {selectedOrder.shipping_address.country}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Payment Summary */}
+                            <div className="space-y-3">
+                                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                    </svg>
+                                    Payment Summary
+                                </h3>
+                                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200/50 dark:border-gray-700/50 space-y-3">
+                                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                                        <span>Subtotal</span>
+                                        <span>${parseFloat(selectedOrder.subtotal).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                                        <span>Shipping</span>
+                                        <span>${parseFloat(selectedOrder.shipping).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                                        <span>Tax</span>
+                                        <span>${parseFloat(selectedOrder.tax).toFixed(2)}</span>
+                                    </div>
+                                    <div className="border-t border-gray-200 dark:border-gray-700 pt-3 flex justify-between">
+                                        <span className="font-semibold text-gray-900 dark:text-white">Total</span>
+                                        <span className="font-bold text-xl text-violet-600 dark:text-violet-400">
+                                            ${parseFloat(selectedOrder.total).toFixed(2)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="sticky bottom-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl px-6 py-4 border-t border-gray-200/50 dark:border-gray-800/50">
+                            <button
+                                onClick={closeModal}
+                                className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-medium rounded-xl shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 transition-all duration-300 hover:-translate-y-0.5"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <Footer />
         </>
     );
