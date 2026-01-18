@@ -281,11 +281,46 @@ function PaymentForm({ cartItems, total, onSuccess, onFailure }) {
             setIsProcessing(false);
             onFailure(error.message);
         } else if (paymentIntent.status === "succeeded") {
-            // Clear cart after successful payment
-            await clearCart();
-            onSuccess(paymentIntent.id.slice(-8).toUpperCase());
+            try {
+                // Calculate order totals
+                const subtotal = cartItems.reduce((sum, item) => sum + (parseFloat(item.price) || 0) * item.quantity, 0);
+                const shipping = subtotal > 100 ? 0 : 9.99;
+                const tax = subtotal * 0.08;
+
+                // Create order in database
+                const orderResponse = await fetch("/api/orders", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        items: cartItems,
+                        subtotal,
+                        shipping,
+                        tax,
+                        total,
+                        paymentIntentId: paymentIntent.id,
+                    }),
+                });
+
+                const orderData = await orderResponse.json();
+
+                if (orderData.success) {
+                    // Clear cart after successful order creation
+                    await clearCart();
+                    onSuccess(orderData.orderNumber);
+                } else {
+                    // Payment succeeded but order creation failed
+                    console.error("Order creation failed:", orderData.error);
+                    await clearCart();
+                    onSuccess(paymentIntent.id.slice(-8).toUpperCase());
+                }
+            } catch (orderError) {
+                console.error("Error creating order:", orderError);
+                // Payment still succeeded, clear cart
+                await clearCart();
+                onSuccess(paymentIntent.id.slice(-8).toUpperCase());
+            }
         }
-    }, [stripe, elements, clientSecret, clearCart, onSuccess, onFailure]);
+    }, [stripe, elements, clientSecret, cartItems, total, clearCart, onSuccess, onFailure]);
 
     const handleCardChange = (event) => {
         if (event.error) {
