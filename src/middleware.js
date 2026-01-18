@@ -14,12 +14,19 @@ const isPublicRoute = createRouteMatcher([
     "/sign-up(.*)",
 ]);
 
+// Admin routes require authentication (role check happens client-side)
+const isAdminRoute = createRouteMatcher([
+    "/admin(.*)",
+    "/api/admin(.*)",
+]);
+
 export default clerkMiddleware(async (auth, request) => {
     // Protect non-public routes
     if (!isPublicRoute(request)) {
         await auth.protect();
     }
 });
+
 
 export const config = {
     matcher: [

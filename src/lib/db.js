@@ -189,5 +189,88 @@ export async function initUserAddressesTable() {
     }
 }
 
+/**
+ * Initialize the user_roles table
+ * Stores user roles for access control (default: 'user', admin: 'admin')
+ * @returns {Promise<void>}
+ */
+export async function initUserRolesTable() {
+    try {
+        await sql`
+            CREATE TABLE IF NOT EXISTS user_roles (
+                id SERIAL PRIMARY KEY,
+                user_id VARCHAR(255) NOT NULL UNIQUE,
+                email VARCHAR(255) NOT NULL,
+                role VARCHAR(50) DEFAULT 'user',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `;
+        console.log('✅ User roles table initialized');
+    } catch (error) {
+        console.error('❌ Failed to initialize user_roles table:', error);
+        throw error;
+    }
+}
+
+/**
+ * Check if a user has admin role
+ * @param {string} userId - Clerk user ID
+ * @returns {Promise<boolean>}
+ */
+export async function isUserAdmin(userId) {
+    if (!userId) return false;
+    try {
+        const result = await sql`
+            SELECT role FROM user_roles 
+            WHERE user_id = ${userId} AND role = 'admin'
+        `;
+        return result.length > 0;
+    } catch (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+    }
+}
+
+/**
+ * Get user role
+ * @param {string} userId - Clerk user ID
+ * @returns {Promise<string>} - 'admin', 'user', or 'user' (default)
+ */
+export async function getUserRole(userId) {
+    if (!userId) return 'user';
+    try {
+        const result = await sql`
+            SELECT role FROM user_roles WHERE user_id = ${userId}
+        `;
+        return result.length > 0 ? result[0].role : 'user';
+    } catch (error) {
+        console.error('Error getting user role:', error);
+        return 'user';
+    }
+}
+
+/**
+ * Set user role
+ * @param {string} userId - Clerk user ID
+ * @param {string} email - User email
+ * @param {string} role - Role to set ('user' or 'admin')
+ * @returns {Promise<void>}
+ */
+export async function setUserRole(userId, email, role = 'user') {
+    try {
+        await sql`
+            INSERT INTO user_roles (user_id, email, role, updated_at)
+            VALUES (${userId}, ${email}, ${role}, CURRENT_TIMESTAMP)
+            ON CONFLICT (user_id) 
+            DO UPDATE SET role = ${role}, email = ${email}, updated_at = CURRENT_TIMESTAMP
+        `;
+        console.log(`✅ User role set: ${email} -> ${role}`);
+    } catch (error) {
+        console.error('Error setting user role:', error);
+        throw error;
+    }
+}
+
 export default sql;
 
