@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "ShopVibe - Premium E-commerce Store",
+  title: "AK Shop - Premium E-commerce Store",
   description:
     "Discover premium products from the latest tech to timeless fashion. Shop curated collections with exceptional quality and service.",
   keywords: [
@@ -28,7 +28,7 @@ export const metadata = {
     "premium products",
   ],
   openGraph: {
-    title: "ShopVibe - Premium E-commerce Store",
+    title: "AK Shop - Premium E-commerce Store",
     description:
       "Discover premium products from the latest tech to timeless fashion.",
     type: "website",

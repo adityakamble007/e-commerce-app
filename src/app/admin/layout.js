@@ -2,8 +2,8 @@ import AdminSidebar from "@/components/AdminSidebar";
 import AdminGuard from "@/components/AdminGuard";
 
 export const metadata = {
-    title: "Admin Panel - ShopVibe",
-    description: "Manage your ShopVibe store",
+    title: "Admin Panel - AK Shop",
+    description: "Manage your AK Shop store",
 };
 
 /**

@@ -191,7 +191,7 @@ function AdminSidebar() {
                                     Admin Panel
                                 </span>
                                 <span className="text-xs text-gray-500 dark:text-gray-400 -mt-0.5">
-                                    ShopVibe
+                                    AK Shop
                                 </span>
                             </div>
                         )}

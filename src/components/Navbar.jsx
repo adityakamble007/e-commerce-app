@@ -62,7 +62,7 @@ function Navbar() {
                 </svg>
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
-                ShopVibe
+                AK Shop
               </span>
             </Link>
           </div>

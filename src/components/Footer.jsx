@@ -96,27 +96,6 @@ function Footer() {
             />
 
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
-                {/* Newsletter Section */}
-                <div className="text-center mb-16 pb-16 border-b border-gray-800">
-                    <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-white via-violet-200 to-white bg-clip-text text-transparent">
-                        Stay in the Loop
-                    </h3>
-                    <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                        Subscribe to our newsletter for exclusive deals, new
-                        arrivals, and insider-only discounts.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
-                        <input
-                            type="email"
-                            placeholder="Enter your email"
-                            className="flex-1 px-5 py-3 rounded-xl bg-gray-800 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-200"
-                        />
-                        <Button className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 transition-all duration-300">
-                            Subscribe
-                        </Button>
-                    </div>
-                </div>
-
                 {/* Footer Links Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
                     {/* Brand Column */}
@@ -138,7 +117,7 @@ function Footer() {
                                 </svg>
                             </div>
                             <span className="text-xl font-bold bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">
-                                ShopVibe
+                                AK Shop
                             </span>
                         </div>
                         <p className="text-gray-400 text-sm mb-4">
@@ -218,7 +197,7 @@ function Footer() {
                 {/* Bottom Bar */}
                 <div className="pt-8 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <p className="text-gray-400 text-sm">
-                        © 2026 ShopVibe. All rights reserved.
+                        © 2026 AK Shop. All rights reserved.
                     </p>
                     <div className="flex gap-6">
                         <a
