@@ -1,40 +1,26 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import useSWR from "swr";
+
+// Fetcher function for SWR
+const fetcher = (url) => fetch(url).then((res) => res.json());
 
 /**
- * Custom hook to fetch products from the API
+ * Custom hook to fetch products from the API with SWR caching
+ * Products are cached and shared across all components
  * @returns {Object} { products, isLoading, error, refetch }
  */
 export function useProducts() {
-    const [products, setProducts] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { data, error, isLoading, mutate } = useSWR("/api/products", fetcher, {
+        revalidateOnFocus: false,    // Don't refetch on window focus
+        dedupingInterval: 60000,      // Dedupe requests within 1 minute
+        revalidateOnReconnect: false, // Don't refetch on reconnect
+    });
 
-    const fetchProducts = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            const response = await fetch("/api/products");
-            const data = await response.json();
-
-            if (!response.ok || !data.success) {
-                throw new Error(data.error || "Failed to fetch products");
-            }
-
-            setProducts(data.products || []);
-        } catch (err) {
-            console.error("❌ Failed to fetch products:", err);
-            setError(err.message || "Something went wrong");
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchProducts();
-    }, [fetchProducts]);
-
-    return { products, isLoading, error, refetch: fetchProducts };
+    return {
+        products: data?.products || [],
+        isLoading,
+        error: error?.message || data?.error || null,
+        refetch: mutate,
+    };
 }

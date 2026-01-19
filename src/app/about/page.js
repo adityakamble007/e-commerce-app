@@ -1,6 +1,3 @@
-"use client";
-
-import { memo } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -80,8 +77,8 @@ const values = [
     },
 ];
 
-// Memoized Team Member Card
-const TeamMemberCard = memo(function TeamMemberCard({ member }) {
+// Team Member Card
+function TeamMemberCard({ member }) {
     return (
         <div className="group bg-white dark:bg-gray-800/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50 hover:border-violet-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10">
             <div className="flex flex-col items-center text-center">
@@ -100,10 +97,10 @@ const TeamMemberCard = memo(function TeamMemberCard({ member }) {
             </div>
         </div>
     );
-});
+}
 
-// Memoized Value Card
-const ValueCard = memo(function ValueCard({ value }) {
+// Value Card
+function ValueCard({ value }) {
     return (
         <div className="group bg-white dark:bg-gray-800/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50 hover:border-violet-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-600/10 to-indigo-600/10 dark:from-violet-600/20 dark:to-indigo-600/20 flex items-center justify-center text-violet-600 dark:text-violet-400 mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -117,10 +114,10 @@ const ValueCard = memo(function ValueCard({ value }) {
             </p>
         </div>
     );
-});
+}
 
-// Memoized Stat Card
-const StatCard = memo(function StatCard({ stat }) {
+// Stat Card
+function StatCard({ stat }) {
     return (
         <div className="text-center">
             <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent mb-2">
@@ -131,7 +128,7 @@ const StatCard = memo(function StatCard({ stat }) {
             </div>
         </div>
     );
-});
+}
 
 function AboutPage() {
     return (
@@ -320,4 +317,4 @@ function AboutPage() {
     );
 }
 
-export default memo(AboutPage);
+export default AboutPage;

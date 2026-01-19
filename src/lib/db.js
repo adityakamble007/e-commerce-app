@@ -111,6 +111,24 @@ export async function initProductsTable() {
 }
 
 /**
+ * Get all products
+ * @returns {Promise<Array>} List of products
+ */
+export async function getProducts() {
+    try {
+        await initProductsTable();
+        const products = await sql`
+            SELECT * FROM products 
+            ORDER BY created_at DESC
+        `;
+        return products;
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        return [];
+    }
+}
+
+/**
  * Initialize the carts table
  * Supports both guest users (via session_id) and logged-in users (via user_id)
  * @returns {Promise<void>}

@@ -92,10 +92,17 @@ export async function GET() {
             ORDER BY created_at DESC
         `;
 
-        return NextResponse.json({
-            success: true,
-            products,
-        });
+        return NextResponse.json(
+            {
+                success: true,
+                products,
+            },
+            {
+                headers: {
+                    "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+                },
+            }
+        );
     } catch (error) {
         console.error("❌ Failed to fetch products:", error);
 

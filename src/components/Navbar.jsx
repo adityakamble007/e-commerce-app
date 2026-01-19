@@ -16,9 +16,14 @@ function Navbar() {
   // Animate badge when cart count increases
   useEffect(() => {
     if (cartCount > prevCartCountRef.current) {
-      setBadgeAnimating(true);
+      const animTimer = setTimeout(() => {
+        setBadgeAnimating(true);
+      }, 0);
       const timer = setTimeout(() => setBadgeAnimating(false), 400);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(animTimer);
+        clearTimeout(timer);
+      };
     }
     prevCartCountRef.current = cartCount;
   }, [cartCount]);

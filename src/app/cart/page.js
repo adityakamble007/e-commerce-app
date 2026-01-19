@@ -27,10 +27,15 @@ const CartItem = memo(function CartItem({
     // Animate quantity changes
     useEffect(() => {
         if (item.quantity !== prevQuantityRef.current) {
-            setQuantityAnimating(true);
+            const animTimer = setTimeout(() => {
+                setQuantityAnimating(true);
+            }, 0);
             const timer = setTimeout(() => setQuantityAnimating(false), 350);
             prevQuantityRef.current = item.quantity;
-            return () => clearTimeout(timer);
+            return () => {
+                clearTimeout(animTimer);
+                clearTimeout(timer);
+            };
         }
     }, [item.quantity]);
 
@@ -348,7 +353,10 @@ export default function CartPage() {
     // Track if initial animation has played
     useEffect(() => {
         if (!isLoading && cartItems.length > 0 && !hasAnimated) {
-            setHasAnimated(true);
+            const timer = setTimeout(() => {
+                setHasAnimated(true);
+            }, 0);
+            return () => clearTimeout(timer);
         }
     }, [isLoading, cartItems.length, hasAnimated]);
 
